@@ -1,14 +1,20 @@
 const express = require('express'); // express makes APIs - connect frontend to database
 
 const redis = require('redis');// import the redis class from the library
-const bodyParser =require('body-parser');
+const bodyParser = require('body-parser');
 const cors = require('cors'); 
 
 const options = {
-    origin:'http://localhost:3000' // allow our frontend to call this backend
+    origin:'http://localhost:3000', // allow our frontend to call this backend
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
 }
 
 const app = express(); // Create an express application 
+//app.listen(3000); // Listen from web requests from the frontend and don't stop
+const port =3001; // port number 
+app.use(bodyParser.json()); // makes body
+app.use(cors(options)); // allow frontend to call backend
 const redisClient = redis.createClient({
     host: 'localhost', // Redis host
     port: 6379,        // Redis port
@@ -18,18 +24,21 @@ const { addOrder, getOrder } = require("./.services/orderservice.js"); // import
 const { addOrderItem, getOrderItem } = require("./.services/orderItems.js"); // import the addOrderItem function from the OrderItems.js file
 const fs = require("fs"); // import the file system library
 const Schema = JSON.parse(fs.readFileSync("./orderItemSchema.json", "utf8")); // read the orderItemSchema.json file and parse it as JSON
-const  Ajv = require("ajv"); // import the ajv library
+const Ajv = require("ajv"); // import the ajv library
 const ajv = new Ajv(); // create an ajv object to validate JSON
 
 // Order
 app.post("/orders", async (req, res) => {
 	let order = req.body;
+    let responseStatus = 200;
+    const contentType = req.get('Content-Type');
+    console.log('Content-Type:', contentType);
 	// order details, include product quantity and shipping address 
-	let responseStatus = order.productQuantity
-	? 200
-	: 400 && order. ShippingAddress
-	? 200 
-	: 400;
+	if (!order || !order.products) {
+        responseStatus = 400;
+        res.status(400).send("Invalid request body: order or products are missing");
+        return;
+      }    
 	
 	if (responseStatus === 200) {
 	    try {
@@ -74,7 +83,7 @@ app.post("/orderItems", async (req, res) => {
     
         // Calling addOrderItem function and storing the result 
         const orderItemId = await addOrderItem({
-            RedisClient, 
+            redisClient, 
             orderItem: req.body, 
         });
             
@@ -108,11 +117,6 @@ app.get("/product/:productKey", async (req, res) => {
 //     let product = await redisClient.json.get("product");
 //     res.json(product);
 // });
-
-//app.listen(3000); // Listen from web requests from the frontend and don't stop
-const port =3001; // port number 
-app.use(bodyParser.json()); // makes body
-app.use(cors(options)); // allow frontend to call backend
 
 app.listen(port,()=>{
     redisClient.connect(); // connect to the database!!!!!
