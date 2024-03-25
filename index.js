@@ -32,13 +32,7 @@ app.post("/orders", async (req, res) => {
 	let order = req.body;
     let responseStatus = 200;
     const contentType = req.get('Content-Type');
-    console.log('Content-Type:', contentType);
-	// order details, include product quantity and shipping address 
-	if (!order || !order.products) {
-        responseStatus = 400;
-        res.status(400).send("Invalid request body: order or products are missing");
-        return;
-      }    
+    console.log('Content-Type:', contentType); 
 	
 	if (responseStatus === 200) {
 	    try {
@@ -57,7 +51,7 @@ app.post("/orders", async (req, res) => {
         } ${order.ShippingAddress ? "" : "ShippingAddress"}`
         );
     }
-    res.status(responseStatus).send();
+    res.status(responseStatus).send({message:"you are cool"});
     });    
 
 app.get("/orders/:orderID", async (req, res) => {
@@ -113,21 +107,10 @@ app.get("/product/:productKey", async (req, res) => {
     res.json(product);
 });
 
-// app.get("/products", async (req, res) => {
-//     let product = await redisClient.json.get("product");
-//     res.json(product);
-// });
-
 app.listen(port,()=>{
     redisClient.connect(); // connect to the database!!!!!
     console.log(`Listening on port: ${port}`); // template literal
 }); // listen for web request from the frontend and dont stop
-
-//http://localhost:3000/boxes
-
-// app.get("",async (req, res)=>{
-//     res.send("Hey");
-// })
 
 // 1- URL
 // 2- a function to return boxes 
