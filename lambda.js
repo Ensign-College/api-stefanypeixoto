@@ -1,16 +1,16 @@
 
-const redis = require('redis');// import the redis class from the library
+// const redis = require('redis');// import the redis class from the library
 
-const redisHost = process.env.REDIS_HOST;
-const redisPort = process.env.REDIS_PORT;
+// const redisHost = process.env.REDIS_HOST;
+// const redisPort = process.env.REDIS_PORT;
 
-const redisClient = redis.createClient({
-  host: redisHost, // Redis host
-  port: redisPort,        // Redis port
-});
+// const redisClient = redis.createClient({
+//   host: redisHost, // Redis host
+//   port: redisPort,        // Redis port
+// });
 
 exports.handler = (event, context) => {
-  event.redisClient = redisClient;
+  // event.redisClient = redisClient;
 
   return {
     statusCode: 200,
@@ -44,3 +44,14 @@ exports.postOrders = async (event, context) => {
   }
   res.status(responseStatus).send({message:"you are cool"});
 };  
+
+exports.getOrders = async (event, context) => {
+  // get the order from the database
+  const orderId = req.params.orderId;
+  let order = await getOrder({redisClient, orderId });
+  if(order === null) {
+      res.status(404).send("Order not found");
+  } else {
+      res.json(order);
+  }
+  };

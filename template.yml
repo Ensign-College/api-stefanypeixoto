@@ -2,10 +2,30 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 
 Resources:
-  MyLambdaFunction:
+  stefany-postOrders:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Handler: lambda.handler
+      Handler: lambda.postOrders
+      Runtime: nodejs20.x
+      CodeUri: ./lambda-function-stefany.zip
+      MemorySize: 128
+      Timeout: 30
+      Environment:
+        Variables:
+          REDIS_HOST: !GetAtt MyElasticacheRedis.RedisEndpoint.Address
+          REDIS_PORT: !GetAtt MyElasticacheRedis.RedisEndpoint.Port
+      Events:
+        MyApi:
+          Type: Api
+          Properties:
+            Path: /
+            Method: post
+
+Resources:
+  stefany-getOrders:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: lambda.getOrders
       Runtime: nodejs20.x
       CodeUri: ./lambda-function-stefany.zip
       MemorySize: 128
