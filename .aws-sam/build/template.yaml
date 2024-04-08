@@ -1,72 +1,80 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: 'AWS::Serverless-2016-10-31'
-
+Transform: AWS::Serverless-2016-10-31
 Resources:
   stefanyPostOrders:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
       Handler: lambda.postOrders
       Runtime: nodejs20.x
-      CodeUri: ./lambda-function-stefany.zip
+      CodeUri: ../../lambda-function-stefany.zip
       MemorySize: 128
       Timeout: 30
       Environment:
         Variables:
-          REDIS_HOST: !GetAtt MyElasticacheRedis.RedisEndpoint.Address
-          REDIS_PORT: !GetAtt MyElasticacheRedis.RedisEndpoint.Port
+          REDIS_HOST:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Address
+          REDIS_PORT:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Port
       Events:
         MyApi:
           Type: Api
           Properties:
             Path: /
             Method: post
-
   stefanyGetOrders:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
       Handler: lambda.getOrders
       Runtime: nodejs20.x
-      CodeUri: ./lambda-function-stefany.zip
+      CodeUri: ../../lambda-function-stefany.zip
       MemorySize: 128
       Timeout: 30
       Environment:
         Variables:
-          REDIS_HOST: !GetAtt MyElasticacheRedis.RedisEndpoint.Address
-          REDIS_PORT: !GetAtt MyElasticacheRedis.RedisEndpoint.Port
+          REDIS_HOST:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Address
+          REDIS_PORT:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Port
       Events:
         MyApi:
           Type: Api
           Properties:
             Path: /
             Method: get
-
   MyElasticacheSubnetGroup:
     Type: AWS::ElastiCache::SubnetGroup
     Properties:
       Description: Subnet group for ElastiCache
       SubnetIds:
-        - subnet-02c217f126c0ce1d5
-
+      - subnet-02c217f126c0ce1d5
   MyElasticacheRedis:
-    Type: 'AWS::ElastiCache::CacheCluster'
+    Type: AWS::ElastiCache::CacheCluster
     Properties:
       CacheNodeType: cache.t2.micro
       Engine: redis
       NumCacheNodes: 1
       Port: 6379
       VpcSecurityGroupIds:
-        - !GetAtt MySecurityGroup.GroupId
-      CacheSubnetGroupName: !Ref MyElasticacheSubnetGroup
-
+      - Fn::GetAtt:
+        - MySecurityGroup
+        - GroupId
+      CacheSubnetGroupName:
+        Ref: MyElasticacheSubnetGroup
   MySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Lambda function
       VpcId: vpc-066e6a637e37f2752
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 6379
-          ToPort: 6379
-          CidrIp: 0.0.0.0/0
-
-
+      - IpProtocol: tcp
+        FromPort: 6379
+        ToPort: 6379
+        CidrIp: '0.0.0.0/0'
